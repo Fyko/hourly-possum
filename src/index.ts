@@ -1,4 +1,4 @@
-import { Client, TextChannel } from 'discord.js';
+import { Client, TextChannel, Permissions } from 'discord.js';
 import { fetchHTML, parseHTML } from './scrape';
 
 const USER_URL = 'https://twitter.com/PossumEveryHour';
@@ -12,9 +12,14 @@ async function fetchTweets() {
 	const newtweet = parsed.find(f => !tweets.includes(f.id));
 	if (newtweet && newtweet.imgs.length) {
 		tweets.push(newtweet.id);
-		const channels = client.channels.cache.filter(c => c instanceof TextChannel && c.name.includes('hourly-possum'));
+		const channels = client.channels.cache.filter(
+			c =>
+				c instanceof TextChannel &&
+				c.name.includes('hourly-possum') &&
+				c.permissionsFor(client.user!.id)!.has([Permissions.FLAGS.SEND_MESSAGES, Permissions.FLAGS.ATTACH_FILES]),
+		);
 		if (channels.size) {
-			const promises = channels.map(c => (c as TextChannel).send({ files: [newtweet.imgs[0]] }));
+			const promises = channels.map(c => (c as TextChannel).send({ files: [newtweet.imgs[0]] }).catch(() => undefined));
 			await Promise.all(promises);
 		}
 	}
