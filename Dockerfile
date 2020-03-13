@@ -19,5 +19,6 @@ COPY . .
 
 ENV DISCORD_TOKEN=
 
-CMD ["pnpm", "run", "start"]
+RUN pnpm run build
+CMD ["node", "."]
 
